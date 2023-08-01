@@ -16,8 +16,10 @@ jobs:
           # Get the issue number
           ISSUE_NUMBER=$(echo "${{ github.event.issue.number }}")
           # Get the contents of the appended file
-          # The regular expression matches on a code block that has at least 20 lines
-          APPENDED_FILE_CONTENTS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "${{ github.api_url }}/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/comments" | jq -r '.[] | select(.body | test("```.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n```"; "m")) | .body' | sed 's/```.*\n//g; s/```//g')
+          # Get the URL of the first file linked in the issue
+          FILE_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "${{ github.api_url }}/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}" | jq -r '.body | match("(?i)https://github.com/[^/]+/[^/]+/files/[0-9]+/[^)]+") | .string')
+          # Download the file
+          APPENDED_FILE_CONTENTS=$(curl -s -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$FILE_URL" | tee /dev/stderr)
           # Parse the contents of the appended file to extract the required data
           Arma_Version=$(echo "$APPENDED_FILE_CONTENTS" | awk '/^Type:/{t=$0} /^Build:/{b=$0} /^Version:/{print t"\n"b"\n"$0}' | grep -oP '\d+\.\d+\.\d+')
           ACE_Version=$(echo "$APPENDED_FILE_CONTENTS" | grep -oP 'Advanced Combat Environment \K\d+\.\d+\.\d+')
