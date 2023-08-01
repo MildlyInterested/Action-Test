@@ -19,7 +19,7 @@ jobs:
           # Get the URL of the first file linked in the issue
           FILE_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "${{ github.api_url }}/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}" | jq -r '.body | match("(?i)https://github.com/[^/]+/[^/]+/files/[0-9]+/[^)]+") | .string')
           # Download the file
-          APPENDED_FILE_CONTENTS=$(curl -s -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$FILE_URL" | tee /dev/stderr)
+          APPENDED_FILE_CONTENTS=$(curl -s -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$FILE_URL" > /dev/null)
           # Parse the contents of the appended file to extract the required data
           Arma_Version=$(echo "$APPENDED_FILE_CONTENTS" | awk '/^Type:/{t=$0} /^Build:/{b=$0} /^Version:/{print t"\n"b"\n"$0}' | grep -oP '\d+\.\d+\.\d+')
           ACE_Version=$(echo "$APPENDED_FILE_CONTENTS" | grep -oP 'Advanced Combat Environment \K\d+\.\d+\.\d+')
@@ -27,5 +27,4 @@ jobs:
           KAT_Version=$(echo "$APPENDED_FILE_CONTENTS" | grep -oP 'kat_main\.pbo - \K\d+\.\d+\.\d+\.\d+')
           Modlist=$(echo "$APPENDED_FILE_CONTENTS" | sed -n '/----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------/,/==========================================================================================================================================================================================================/ {/----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------/!{/==========================================================================================================================================================================================================/!p}}' | sed 's/^[0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\}//' | awk -F '|' '{print $1}')
           # Update the issue with the extracted data
-          printf -v EXTRACTED_DATA "Arma Version: %s\nACE Version: %s\nCBA Version: %s\nKAT Version: %s\nModlist: %s" "$Arma_Version" "$ACE_Version" "$CBA_Version" "$KAT_Version" "$Modlist"
-          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -X PATCH "${{ github.api_url }}/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}" -d "{\"body\":\"Extracted data: ${EXTRACTED_DATA}\"}"
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -X PATCH "${{ github.api_url }}/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}" -d "{\"body\":\"Arma Version: ${Arma_Version}\nACE Version: ${ACE_Version}\nCBA Version: ${CBA_Version}\nKAT Version: ${KAT_Version}\nModlist: ${Modlist}\"}"
