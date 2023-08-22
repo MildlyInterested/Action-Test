@@ -27,8 +27,9 @@ Make sure to attach it to this report!
 <!-- Add a export of your relevant CBA settings here (ACE Medical and all KAT related settings). Go to addon options, server or missions tab and then click export to copy them to your clipboard. -->
 <details>
   <summary>CBA Settings</summary>
+
   ```sqf
-  Paste your settings here.
+  Paste your settings in here.
   ```  
 </details>
 
