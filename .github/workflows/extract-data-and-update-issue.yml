@@ -22,7 +22,7 @@ jobs:
           while read -r FILE_URL; do
             APPENDED_FILE_CONTENTS=$(curl -s -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$FILE_URL" | tee /dev/stderr)
             # Check if the file contains the Arma_Version string
-            if [[ "$APPENDED_FILE_CONTENTS" == *NOT FOUND (Empty)* ]]; then
+            if [ "$APPENDED_FILE_CONTENTS" == *NOT FOUND (Empty)* ]; then
               # Parse the contents of the appended file to extract the required data
               Arma_Version=$(echo "$APPENDED_FILE_CONTENTS" | awk '/^Type:/{t=$0} /^Build:/{b=$0} /^Version:/{print t"\n"b"\n"$0}' | grep -oP '\d+\.\d+\.\d+')
               ACE_Version=$(echo "$APPENDED_FILE_CONTENTS" | grep -oP 'Advanced Combat Environment \K\d+\.\d+\.\d+')
